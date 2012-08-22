@@ -8,9 +8,10 @@
 <body class="typo" style="padding:50px;">
 
 
-<h3>一、使用 <code>data-async="/url/to/get/data"</code></h3>
-<p>如果在 HTMT Attribute 中指定 <code>data-async</code>，配合事件处理可以行到想要的内容。</p>
-<p>点我 <button data-async="https://api.github.com/search/?location=china&callback=programmers">会出错滴</button></p>
+<h3>一、使用 HTML 实例化</h3>
+
+<p>如果在 HTMT Attribute 中指定 <code>data-toggle="async"</code>，给定 <code>data-target="/url/for/ajax/request"</code> 那么不再需要 js 实例化。配合事件处理可以行到想要的内容。</p>
+<p>非服务器上请求是 error <a href="baixing.com" data-toggle="async" data-target="https://api.github.com/search/?location=china&callback=programmers">>>点我<<</a></p>
 
 <blockquote id="data_add" style="display:none;">
 </blockquote>
@@ -21,15 +22,16 @@
 /* 以 js 方式调用 async 组件
  * @param options {Object} 传入的对象，支持三个属性/方法
  *  {
- *     url: {String} [可选] 请求的地址，默认为 $(this).data('async')
+ *     url: {String} [可选] 请求的地址，默认为 $(this).data('async') || 也可以是在 selector 中使用 data-target="" 来指定 url
  *     eventType: [可选] {String} 触发异步请求的事件，默认为 click
  *     callback: [可选] {Function} 接入一个参数，当参数非空是为请求成功，否则为失败
  *     data: {Object/Function} [可选] 需要发送的数据，当 data 为 Function 的时候，执行它
  *     method: {String} [可选] 请求数据的式，GET / POST，默认为 GET
+ *     preventDefault: {Boolean} [可选] 异步请求一般都是不刷新页面的，所以默认会阻止默认事件，设置为 false 让其不阻止事件，比如 form 配合 validator
  *  }
  */</pre>
 <p>
-<strong>使用方法: <input id="hello" style="width:600px;" placeholder="focus 进来，然后点别的地方试试，有数据的哦"></strong>
+<strong>使用方法: <input id="hello" data-target="http://sofish.de/path/" style="width:600px;" placeholder="focus 进来，然后点别的地方试试，有数据的哦"></strong>
 </p>
 
 <blockquote id="data" style="display:none;">
@@ -54,20 +56,20 @@ $('#hello').async(options);
 <ul>
 	<li><code>fetching</code>: 开始请求数据
 		<pre>
-$('[data-async]').on('async_before', function(){
+$('[data-toggle="async"]').on('async_before', function(){
 	console.log('你点我啦，等一等，数据马上来');
 });</pre>
 	</li>
 	<li><code>done</code>: 完成数据获取
 		<pre>
 // 回调函数第二个参数是请求返回的数据
-$('[data-async]').on('async_success', function(e, data){
+$('[data-toggle="async"]').on('async_success', function(e, data){
 	console.log('数据是: ', data);
 });</pre>
 	</li>
 	<li><code>error</code>: 获取资源时出错
 		<pre>
-$('[data-async]').on('async_error', function(){
+$('[data-toggle="async"]').on('async_error', function(){
 	console.log('出错啦');
 });</pre>
 	</li>
@@ -80,32 +82,43 @@ $('[data-async]').on('async_error', function(){
 var data_add = $('#data_add');
 
 // 事件测试
-$('[data-async]').on('async_before', function(){
+$('[data-toggle="async"]').on('async_before', function(){
 	data_add.html('<h4>返回来的数据：</h4>' + '<p>1. 你点我啦，等一等，数据马上来</p>');
 	data_add.slideDown(300);
 
 });
 
-$('[data-async]').on('async_success', function(e, data){
+$('[data-toggle="async"]').on('async_success', function(e, data){
 	var html = data_add.html();
-	data_add.html(html + '<p>' + data + '</p>');
+	data_add.html(html + '<p>2. ' + data + '</p>');
 });
 
-$('[data-async]').on('async_error', function(){
+$('[data-toggle="async"]').on('async_error', function(){
 	var html = data_add.html();
 	data_add.html(html + '<p>2. 出错啦</p>');
 });
 
 // 纯 js 调用
 var callback = function(data){
+		data = data || '请求为空或者出错了哦...';
+	
 		$('#data').html('<h4>返回来的数据：</h4>' + data);
 		$('#data').slideDown(300);
 	},
+	
+	fn = function(){
+		return {
+			name: 'sofish',
+			password: 'baixing'
+		}
+	},
+	
 	options = {
 		// url: '/ajax/tag/autocomplete/?category=root&cityEnglishName=shanghai&key=&term=nu',
-		url: 'http://sofish.de/path/',
+		// url: 'http://sofish.de/path/',
 		callback: callback,
-		eventType: 'blur'
+		eventType: 'blur',
+		data: fn
 	}
 
 $('#hello').async(options);
