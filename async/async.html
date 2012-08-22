@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8" />
+	<title>async 插件</title>
+	<link href="http://typo.sofish.de/typo.css" rel="stylesheet" />
+</head>
+<body class="typo" style="padding:50px;">
+
+
+<h3>一、使用 <code>data-async="/url/to/get/data"</code></h3>
+<p>如果在 HTMT Attribute 中指定 <code>data-async</code>，配合事件处理可以行到想要的内容。</p>
+<p>点我 <button data-async="https://api.github.com/search/?location=china&callback=programmers">会出错滴</button></p>
+
+<blockquote id="data_add" style="display:none;">
+</blockquote>
+
+<h3>二、纯 js 调用</h3>
+<p>支持事件传数据、定义处理事件等，具体看这个参数描述：</p>
+<pre>
+/* 以 js 方式调用 async 组件
+ * @param options {Object} 传入的对象，支持三个属性/方法
+ *  {
+ *     url: {String} 请求的地址
+ *     eventType: [可选] {String} 触发异步请求的事件，默认为 click
+ *     callback: [可选] {Function} 接入一个参数，当参数非空是为请求成功，否则为失败
+ *     data: {Object} [可选] 需要发送的数据
+ *     method: {String} [可选] 请求数据的式，GET / POST，默认为 GET
+ *  }
+ */</pre>
+<p>
+<strong>使用方法: <input id="hello" style="width:600px;" placeholder="focus 进来，然后点别的地方试试，有数据的哦"></strong>
+</p>
+
+<blockquote id="data" style="display:none;">
+</blockquote>
+
+<pre>
+// 纯 js 调用
+var callback = function(data){
+		console.log(data);
+	},
+	options = {
+		url: '/ajax/tag/autocomplete/?category=root&cityEnglishName=shanghai&key=&term=nu',
+		callback: callback,
+		eventType: 'blur'
+	}
+
+$('#hello').async(options);
+</pre>
+
+
+<h3>三、支持事件监听</h3>
+<ul>
+	<li><code>fetching</code>: 开始请求数据
+		<pre>
+$('[data-async]').on('fetching', function(){
+	console.log('你点我啦，等一等，数据马上来');
+});</pre>
+	</li>
+	<li><code>done</code>: 完成数据获取
+		<pre>
+// 回调函数第二个参数是请求返回的数据
+$('[data-async]').on('done', function(e, data){
+	console.log('数据是: ', data);
+});</pre>
+	</li>
+	<li><code>error</code>: 获取资源时出错
+		<pre>
+$('[data-async]').on('error', function(){
+	console.log('出错啦');
+});</pre>
+	</li>
+</ul>
+
+<script src="http://static.baixing.net/media/js/jquery-1.7.2.min.js"></script>
+<script src="http://static.baixing.net/media/js/modules/async.js"></script>
+<script>
+
+var data_add = $('#data_add');
+
+// 事件测试
+$('[data-async]').on('fetching', function(){
+	data_add.html('<h4>返回来的数据：</h4>' + '<p>1. 你点我啦，等一等，数据马上来</p>');
+	data_add.slideDown(300);
+
+});
+
+$('[data-async]').on('done', function(e, data){
+	var html = data_add.html();
+	data_add.html(html + '<p>' + data + '</p>');
+});
+
+$('[data-async]').on('error', function(){
+	var html = data_add.html();
+	data_add.html(html + '<p>2. 出错啦</p>');
+});
+
+// 纯 js 调用
+var callback = function(data){
+		$('#data').html('<h4>返回来的数据：</h4>' + data);
+		$('#data').slideDown(300);
+	},
+	options = {
+		url: '/ajax/tag/autocomplete/?category=root&cityEnglishName=shanghai&key=&term=nu',
+		callback: callback,
+		eventType: 'blur'
+	}
+
+$('#hello').async(options);
+
+</script>
+</body>
+</html>
